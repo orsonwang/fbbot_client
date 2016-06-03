@@ -1,0 +1,12 @@
+hash: 9253254d1dd5589c46ce874a048f8ce0065e78729a2ca65111b426c192199d95
+updated: 2016-05-30T18:36:47.737674181+08:00
+imports:
+- name: github.com/nats-io/nats
+  version: aa1bffcd28c5ace76b436f25d79869de32589d3e
+  subpackages:
+  - encoders/builtin
+- name: github.com/nats-io/nuid
+  version: a5152d67cf63cbfb5d992a395458722a45194715
+- name: github.com/orsonwang/fbot
+  version: eeb7ca1f0fb47cd09ae101dd9707bdee44a33268
+devImports: []
