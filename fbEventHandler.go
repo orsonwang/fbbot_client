@@ -64,7 +64,7 @@ func (s *FBBotEventHandler) processTextMessage(from string, text string) {
 		log.Fatalf("Error in Request: %v\n", err)
 	}
 	strResult := string(msg.Data)
-	log.Printf("Return text \"%s\" from text_service", text)
+	log.Printf("Return text \"%s\" from text_service", strResult)
 	if len(strResult) != 0 {
 		s.botClient.SendSimpleMessage(from, strResult)
 	} else {

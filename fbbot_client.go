@@ -30,7 +30,7 @@ func main() {
 		log.Fatalf("Can't connect to NATS: %v\n", err)
 	}
 	defer nc.Close()
-	mainFBBotClient := &messenger.Messenger{
+	mainFBBotClient = &messenger.Messenger{
 		VerifyToken: os.Getenv("FB_VERIFY_TOKEN"),
 		AppSecret:   os.Getenv("FB_APP_SECRET"),
 		AccessToken: os.Getenv("FB_PAGE_TOKEN"),
