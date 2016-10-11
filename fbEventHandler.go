@@ -66,7 +66,10 @@ func (s *FBBotEventHandler) processTextMessage(from string, text string) {
 	strResult := string(msg.Data)
 	log.Printf("Return text \"%s\" from text_service", strResult)
 	if len(strResult) != 0 {
-		s.botClient.SendSimpleMessage(from, strResult)
+		_, err = s.botClient.SendSimpleMessage(from, strResult)
+		if err != nil {
+			log.Fatalf("Error reply text message: %v\n", err)
+		}
 	} else {
 		s.botClient.SendSimpleMessage(from, "我無法了解您的指令")
 	}
