@@ -18,15 +18,16 @@ var nc *nats.Conn
 func main() {
 	f, err := os.OpenFile("./fbbot.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0660)
 	if err != nil {
-		log.Fatalf("Can't connect: %v\n", err)
+		log.Fatalf("Can't open log file: %v\n", err)
 	}
 	log = new(logger.Logger)
 	log.SetOutput(f)
+	log.SetFlags(logger.LstdFlags)
 
 	urls := "nats://localhost:4222"
 	nc, err = nats.Connect(urls)
 	if err != nil {
-		log.Fatalf("Can't connect: %v\n", err)
+		log.Fatalf("Can't connect to NATS: %v\n", err)
 	}
 	defer nc.Close()
 	mainFBBotClient := &messenger.Messenger{

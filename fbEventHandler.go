@@ -2,7 +2,7 @@ package main
 
 import (
 	"regexp"
-	"strings"
+	//	"strings"
 	"time"
 
 	"gopkg.in/maciekmm/messenger-platform-go-sdk.v4"
@@ -56,15 +56,15 @@ func (s *FBBotEventHandler) matchString(pattern, text string) (result bool) {
 
 // processTextMessage ...
 func (s *FBBotEventHandler) processTextMessage(from string, text string) {
-	strAfterCut := strings.ToUpper(text)
 	log.Printf("Received text \"%s\" from %s", text, from)
 
 	subj := "aitc.text.service"
-	msg, err := nc.Request(subj, []byte(strAfterCut), 1*time.Second)
+	msg, err := nc.Request(subj, []byte(text), 3*time.Second)
 	if err != nil {
 		log.Fatalf("Error in Request: %v\n", err)
 	}
 	strResult := string(msg.Data)
+	log.Printf("Return text \"%s\" from text_service", text)
 	if len(strResult) != 0 {
 		s.botClient.SendSimpleMessage(from, strResult)
 	} else {
