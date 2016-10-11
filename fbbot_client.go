@@ -11,7 +11,7 @@ import (
 )
 
 var mainFBEventHandler *FBBotEventHandler
-var mainFBBotClient *messenger.Messenger
+var mainFBMessenger *messenger.Messenger
 var log *logger.Logger
 var nc *nats.Conn
 
@@ -28,9 +28,11 @@ func main() {
 	nc, err = nats.Connect(urls)
 	if err != nil {
 		log.Fatalf("Can't connect to NATS: %v\n", err)
+	} else {
+		log.Println("Connected to NATS")
 	}
 	defer nc.Close()
-	mainFBBotClient = &messenger.Messenger{
+	mainFBMessenger = &messenger.Messenger{
 		VerifyToken: os.Getenv("FB_VERIFY_TOKEN"),
 		AppSecret:   os.Getenv("FB_APP_SECRET"),
 		AccessToken: os.Getenv("FB_PAGE_TOKEN"),
@@ -38,12 +40,12 @@ func main() {
 	}
 
 	mainFBEventHandler = new(FBBotEventHandler)
-	mainFBEventHandler.SetFBBotClient(mainFBBotClient)
+	mainFBEventHandler.SetFBBotClient(mainFBMessenger)
 
-	mainFBBotClient.MessageReceived = mainFBEventHandler.OnEventMessage
-	mainFBBotClient.MessageDelivered = mainFBEventHandler.OnEventDelivery
-	mainFBBotClient.Postback = mainFBEventHandler.OnEventPostback
-	http.HandleFunc("/fb_callback", mainFBBotClient.Handler)
+	mainFBMessenger.MessageReceived = mainFBEventHandler.OnEventMessage
+	mainFBMessenger.MessageDelivered = mainFBEventHandler.OnEventDelivery
+	mainFBMessenger.Postback = mainFBEventHandler.OnEventPostback
+	http.HandleFunc("/fb_callback", mainFBMessenger.Handler)
 
 	port := os.Getenv("FB_BOT_PORT")
 	addr := fmt.Sprintf(":%s", port)
