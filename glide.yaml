@@ -1,3 +1,2 @@
 package: fbbot_client
-import:
-- package: github.com/orsonwang/fbot
+import: []

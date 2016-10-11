@@ -5,48 +5,48 @@ import (
 	"strings"
 	"time"
 
-	"github.com/orsonwang/fbot"
+	"gopkg.in/maciekmm/messenger-platform-go-sdk.v4"
 )
 
 // FBBotEventHandler ...
 type FBBotEventHandler struct {
-	botClient *fbot.Bot
+	botClient *messenger.Messenger
 }
 
 // SetFBBotClient to assign fbbot client handler
-func (s *FBBotEventHandler) SetFBBotClient(bc *fbot.Bot) {
+func (s *FBBotEventHandler) SetFBBotClient(bc *messenger.Messenger) {
 	s.botClient = bc
 }
 
 // OnEventMessage ...
-func (s *FBBotEventHandler) OnEventMessage(event *fbot.Event) {
+func (s *FBBotEventHandler) OnEventMessage(event messenger.Event, opts messenger.MessageOpts, msg messenger.ReceivedMessage) {
 	log.Println("=== FB Callback ===")
-	log.Println(event.Sender.ID)
-	log.Println(event.Recipient.ID)
-	log.Println(event.Timestamp)
-	log.Println(event.Message.Mid)
-	log.Println(event.Message.Seq)
-	log.Println(event.Message.Text)
+	log.Printf("Sender ID: %s\n", opts.Sender.ID)
+	log.Printf("Recipent ID: %s\n", opts.Recipient.ID)
+	log.Printf("Timestame: %d\n", opts.Timestamp)
+	log.Printf("Message ID: %s\n", msg.ID)
+	log.Printf("Message Seq: %d\n", msg.Seq)
+	log.Printf("Message Text: %s\n", msg.Text)
 
-	if len(event.Message.Attachments) != 0 {
-		for _, attachment := range event.Message.Attachments {
+	if len(msg.Attachments) != 0 {
+		for _, attachment := range msg.Attachments {
 			log.Println(attachment.Type)
-			log.Println(attachment.Payload.URL)
+			//log.Println(attachment.payload.URL)
 		}
 	}
-	s.processTextMessage(event.Sender, event.Message.Text)
+	s.processTextMessage(opts.Sender.ID, msg.Text)
 }
 
 // OnEventDelivery ...
-func (s *FBBotEventHandler) OnEventDelivery(event *fbot.Event) {
-	log.Println(event.Delivery.Mids[0])
-	log.Println(event.Delivery.Watermark)
-	log.Println(event.Delivery.Seq)
+func (s *FBBotEventHandler) OnEventDelivery(event messenger.Event, opts messenger.MessageOpts, delivery messenger.Delivery) {
+	log.Println(delivery.MessageIDS[0])
+	log.Println(delivery.Watermark)
+	log.Println(delivery.Seq)
 }
 
 // OnEventPostback ...
-func (s *FBBotEventHandler) OnEventPostback(event *fbot.Event) {
-	log.Println(event.Postback.Payload)
+func (s *FBBotEventHandler) OnEventPostback(event messenger.Event, opts messenger.MessageOpts, postback messenger.Postback) {
+	log.Println(postback.Payload)
 }
 
 func (s *FBBotEventHandler) matchString(pattern, text string) (result bool) {
@@ -55,7 +55,7 @@ func (s *FBBotEventHandler) matchString(pattern, text string) (result bool) {
 }
 
 // processTextMessage ...
-func (s *FBBotEventHandler) processTextMessage(from *fbot.User, text string) {
+func (s *FBBotEventHandler) processTextMessage(from string, text string) {
 	strAfterCut := strings.ToUpper(text)
 	log.Printf("Received text \"%s\" from %s", text, from)
 
@@ -66,24 +66,8 @@ func (s *FBBotEventHandler) processTextMessage(from *fbot.User, text string) {
 	}
 	strResult := string(msg.Data)
 	if len(strResult) != 0 {
-		s.botClient.Deliver(fbot.DeliverParams{
-			Recipient: from,
-			Message: &fbot.Message{
-				Text: strResult,
-			},
-		})
+		s.botClient.SendSimpleMessage(from, strResult)
 	} else {
-		s.botClient.Deliver(fbot.DeliverParams{
-			Recipient: from,
-			Message: &fbot.Message{
-				Attachment: &fbot.Attachment{
-					Type: "image",
-					Payload: &fbot.Payload{
-						URL: "https://linebot.gaze.tw/exrate.png",
-					},
-				},
-			},
-		})
+		s.botClient.SendSimpleMessage(from, "我無法了解您的指令")
 	}
-
 }

@@ -7,11 +7,11 @@ import (
 	"os"
 
 	"github.com/nats-io/nats"
-	"github.com/orsonwang/fbot"
+	"gopkg.in/maciekmm/messenger-platform-go-sdk.v4"
 )
 
 var mainFBEventHandler *FBBotEventHandler
-var mainFBBotClient *fbot.Bot
+var mainFBBotClient *messenger.Messenger
 var log *logger.Logger
 var nc *nats.Conn
 
@@ -29,20 +29,20 @@ func main() {
 		log.Fatalf("Can't connect: %v\n", err)
 	}
 	defer nc.Close()
-
-	mainFBBotClient = fbot.NewBot(fbot.Config{
-		AccessToken: os.Getenv("FB_PAGE_TOKEN"),
-		AppSecret:   os.Getenv("FB_APP_SECRET"),
+	mainFBBotClient := &messenger.Messenger{
 		VerifyToken: os.Getenv("FB_VERIFY_TOKEN"),
-	})
+		AppSecret:   os.Getenv("FB_APP_SECRET"),
+		AccessToken: os.Getenv("FB_PAGE_TOKEN"),
+		//    Debug: messenger.DebugAll, //All,Info,Warning
+	}
+
 	mainFBEventHandler = new(FBBotEventHandler)
 	mainFBEventHandler.SetFBBotClient(mainFBBotClient)
 
-	mainFBBotClient.On(fbot.EventMessage, mainFBEventHandler.OnEventMessage)
-	mainFBBotClient.On(fbot.EventDelivery, mainFBEventHandler.OnEventDelivery)
-	mainFBBotClient.On(fbot.EventPostback, mainFBEventHandler.OnEventPostback)
-
-	http.Handle("/fb_callback", fbot.Handler(mainFBBotClient))
+	mainFBBotClient.MessageReceived = mainFBEventHandler.OnEventMessage
+	mainFBBotClient.MessageDelivered = mainFBEventHandler.OnEventDelivery
+	mainFBBotClient.Postback = mainFBEventHandler.OnEventPostback
+	http.HandleFunc("/fb_callback", mainFBBotClient.Handler)
 
 	port := os.Getenv("FB_BOT_PORT")
 	addr := fmt.Sprintf(":%s", port)
